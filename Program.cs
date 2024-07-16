@@ -38,9 +38,10 @@ namespace number_factory // Note: actual namespace depends on the project name.
 
             List<num> q = new List<num>();
             List<num> qt = new List<num>();
-            List<int> made = new List<int>();
+            List<num> sol = new List<num>();
+            Dictionary<int,int> made = new Dictionary<int,int>();
 
-            int get_to = 9199;
+            int get_to = 9111;
 
             List<int> numss = new List<int>();
             numss.Add(1);
@@ -58,7 +59,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
 
             foreach (int i in numss){
                 q.Add(new num(i));
-                made.Add(i);
+                made.Add(i,1);
             }
 
 
@@ -67,29 +68,25 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     foreach (num n2 in q)
                     {
                         //a  add
-                        int a = n1.number + n2.number;
-                        qt.Add(new num(n1, n2, 'a'));
-                        
+                        adder(n1, n2, 'a');
                         //m  mult
-                        a = n1.number * n2.number;
-                        qt.Add(new num(n1, n2, 'm'));
-
+                        adder(n1, n2, 'm');
                         //s  subt
-                        a = n1.number - n2.number;
-                        qt.Add(new num(n1, n2, 's'));
-
+                        adder(n1, n2, 's');
                         //e  exp
-                        a = (int)Math.Pow(n1.number, n2.number);
-                        qt.Add(new num(n1, n2, 'e'));
+                        adder(n1, n2, 'e');
                     }
                 }
+                //Dict show
+                //foreach (var i in made) {Console.WriteLine($"{i.Key}|{i.Value}");}
+                //compile to q
                 foreach(num n in qt)
                 {
                     //if (n.number == get_to) { Console.WriteLine($"n:{n.number}|step:{n.stepc-1}|{n.makeorder}"); }
                     q.Add(n);
                 }
-
-                prnt(q, get_to);
+                //print the thing
+                prnt(sol, get_to);
 
                 q = dedup(q);
 
@@ -99,15 +96,37 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 Console.ReadLine();
             }
 
-            List<num> dedup(List<num> l) { 
+            void adder(num n1,num n2,char opc) {
+                int a = 0;
+                if (opc == 'a') {a = n1.number + n2.number; }
+                if (opc == 'm') {a = n1.number * n2.number; }
+                if (opc == 's') {a = n1.number - n2.number; }
+                if (opc == 'e') {a = (int)Math.Pow(n1.number, n2.number); }
+
+                num n = new num(n1, n2, opc);
+                int st = n1.stepc + n2.stepc;
+                if (a == get_to) { sol.Add(n); prnt(sol, get_to); Console.WriteLine(); }
+                if (!made.ContainsKey(a)) { qt.Add(n); made.Add(a,st); }
+                else if (made[a] > st) { qt.Add(n); made[a] = st; }
+            }
+
+            List<num> dedup(List<num> l) {
+                Console.WriteLine("dd start");
                 List<num> list = new List<num>();
                 bool b = true;
                 int i = 0;
+                int c = 0;
+                Console.WriteLine(l.Count());
+                int d = l.Count()/20;
                 foreach (num n in l)
                 {
                     b = true;
                     i = 0;
-                    if (n.number > 0 && n.number < get_to*2) {
+                    c++;
+                    if (c % d == 0) {
+                        Console.WriteLine((double)l.Count()/ (double)c);
+                    }
+                    if (n.number > 0 && n.number < 2147483648 && n.number < get_to*10) {
                     foreach (num n2 in list)
                     {
                         //Console.WriteLine($"n{n.number}|{n.stepc}|n2:{n2.number}|{n2.stepc}");
@@ -125,6 +144,8 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     if (b) { list.Add(n); }
                 }
                 }
+                Console.WriteLine(list.Count());
+                Console.WriteLine("dd end");
                 return list;
             }
 
@@ -142,7 +163,9 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     foreach (num n in s[i]) {
                         Console.WriteLine($"n:{n.number}|step:{n.stepc - 1}|{n.makeorder}");
                     }
+                    break;
                 }
+
             }
         }
     }
