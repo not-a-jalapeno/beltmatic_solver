@@ -11,23 +11,38 @@ namespace number_factory // Note: actual namespace depends on the project name.
             public int number;
             public int stepc;
             public string makeorder;
-
+            public List<int> ints = new List<int>();
 
             public num(int n) {
                 number = n;
                 stepc = 1;
                 makeorder = $"{n}";
+                ints.Add(n);
             }
             public num(num n1, num n2,char opcode) {
                 //a  add 
                 //m  mult
                 //s  subt
                 //e  exp
-                if (opcode == 'a') { number = n1.number + n2.number;makeorder = $"({n1.makeorder}+{n2.makeorder})";}
-                else if (opcode == 'm') { number = n1.number * n2.number;makeorder = $"({n1.makeorder}*{n2.makeorder})"; }
-                else if (opcode == 's') { number = n1.number - n2.number;makeorder = $"({n1.makeorder}-{n2.makeorder})"; }
-                else if (opcode == 'e') { number = (int)Math.Pow(n1.number,n2.number);makeorder = $"({n1.makeorder}^{n2.makeorder})"; }
+                //d  div
+                //r  div remainder
+                if (opcode == 'a') { number = n1.number + n2.number; makeorder = $"({n1.makeorder}+{n2.makeorder})"; }
+                else if (opcode == 'm') { number = n1.number * n2.number; makeorder = $"({n1.makeorder}*{n2.makeorder})"; }
+                else if (opcode == 's') { number = n1.number - n2.number; makeorder = $"({n1.makeorder}-{n2.makeorder})"; }
+                else if (opcode == 'e') { number = (int)Math.Pow(n1.number, n2.number); makeorder = $"({n1.makeorder}^{n2.makeorder})"; }
+                else if (opcode == 'd') { number = n1.number / n2.number;makeorder = $"({n1.makeorder}/{n2.makeorder})"; }
+                else if (opcode == 'r') { number = n1.number / n2.number;makeorder = $"({n1.makeorder}%{n2.makeorder})"; }
                 stepc = n1.stepc+n2.stepc;
+                foreach (int i in n1.ints) { ints.Add(i); }
+                foreach (int i in n2.ints) { ints.Add(i); }
+            }
+            public string intz() {
+                string so = "";
+                List<int> insz = new List<int>();
+                foreach (int i in ints) { insz.Add(i); }
+                insz.Sort();
+                foreach (int i in insz) { so = $"{so} {i}"; }
+                return so;
             }
         }
         static void Main(string[] args)
@@ -41,7 +56,9 @@ namespace number_factory // Note: actual namespace depends on the project name.
             List<num> sol = new List<num>();
             Dictionary<int,int> made = new Dictionary<int,int>();
 
-            int get_to = 9111;
+            double max_mult = 10;
+
+            int get_to = 609;
 
             List<int> numss = new List<int>();
             numss.Add(1);
@@ -53,18 +70,28 @@ namespace number_factory // Note: actual namespace depends on the project name.
             numss.Add(7);
             numss.Add(8);
             numss.Add(9);
-            //numss.Add(11);
-            //numss.Add(12);
-            
+            numss.Add(11);
+            numss.Add(12);
+            numss.Add(13);
+            numss.Add(14);
+            numss.Add(15);
+
 
             foreach (int i in numss){
                 q.Add(new num(i));
                 made.Add(i,1);
             }
 
-
+            int count = 0;
+            int c = 0;
+            int l = 0;
             while (true) {
+                count = 0;
+                l = q.Count()/10;
+                c = 0;
+                Console.Write("number maker:");
                 foreach (num n1 in q) {
+
                     foreach (num n2 in q)
                     {
                         //a  add
@@ -75,66 +102,79 @@ namespace number_factory // Note: actual namespace depends on the project name.
                         adder(n1, n2, 's');
                         //e  exp
                         adder(n1, n2, 'e');
+                        //d  div
+                        adder(n1, n2, 'd');
+                        //r  div remainder
+                        adder(n1, n2, 'r');
+
+                    }
+                    count++;
+                    if (count % l == 0)
+                    {
+                        c++;
+                        Console.Write($"[{c-1}]");
                     }
                 }
-                //Dict show
+                Console.WriteLine();
+                //showes the dict
                 //foreach (var i in made) {Console.WriteLine($"{i.Key}|{i.Value}");}
+
                 //compile to q
-                foreach(num n in qt)
-                {
-                    //if (n.number == get_to) { Console.WriteLine($"n:{n.number}|step:{n.stepc-1}|{n.makeorder}"); }
-                    q.Add(n);
-                }
-                //print the thing
+                foreach(num n in qt){q.Add(n);}
+                //print the solutions
                 prnt(sol, get_to);
 
+                //removes duplicates
+                sol = dedupsol(sol);
                 q = dedup(q);
 
-                //print all the numbers
-                //foreach (num n in q) {Console.WriteLine($"n:{n.number}|s:{n.stepc}|o:{n.makeorder}");}
+                //tell when finished scycle and wait for me to tell to run agian
                 Console.WriteLine("ran:");
                 Console.ReadLine();
             }
 
+            //the function that addes new numbers
             void adder(num n1,num n2,char opc) {
                 int a = 0;
                 if (opc == 'a') {a = n1.number + n2.number; }
-                if (opc == 'm') {a = n1.number * n2.number; }
-                if (opc == 's') {a = n1.number - n2.number; }
-                if (opc == 'e') {a = (int)Math.Pow(n1.number, n2.number); }
+                else if (opc == 'm') {a = n1.number * n2.number; }
+                else if (opc == 's') {a = n1.number - n2.number; }
+                else if (opc == 'e') {a = (int)Math.Pow(n1.number, n2.number); }
+                else if (opc == 'd') { a = n1.number / n2.number; }
+                else if (opc == 'r') { a = n1.number % n2.number; }
 
-                num n = new num(n1, n2, opc);
-                int st = n1.stepc + n2.stepc;
-                if (a == get_to) { sol.Add(n); prnt(sol, get_to); Console.WriteLine(); }
-                if (!made.ContainsKey(a)) { qt.Add(n); made.Add(a,st); }
-                else if (made[a] > st) { qt.Add(n); made[a] = st; }
+                if (a > 0 && a < get_to*max_mult)
+                {
+                    num n = new num(n1, n2, opc);
+                    int st = n1.stepc + n2.stepc;
+                    if (a == get_to) {sol.Add(n);}
+
+                    if (!made.ContainsKey(a)) { qt.Add(n); made.Add(a, st); }
+                    else if (made[a] > st) { qt.Add(n); made[a] = st; }
+                }
             }
+            //
 
+            //removes duplicate numbers from the list of elelments replace longer step counts 
             List<num> dedup(List<num> l) {
-                Console.WriteLine("dd start");
+                Console.WriteLine("\ndeduplication:");
                 List<num> list = new List<num>();
                 bool b = true;
                 int i = 0;
                 int c = 0;
                 Console.WriteLine(l.Count());
-                int d = l.Count()/20;
+                int d = l.Count()/25;
                 foreach (num n in l)
                 {
                     b = true;
                     i = 0;
                     c++;
                     if (c % d == 0) {
-                        Console.WriteLine((double)l.Count()/ (double)c);
+                        Console.Write("[]");
                     }
-                    if (n.number > 0 && n.number < 2147483648 && n.number < get_to*10) {
-                    foreach (num n2 in list)
-                    {
-                        //Console.WriteLine($"n{n.number}|{n.stepc}|n2:{n2.number}|{n2.stepc}");
-                        if (n2.number == n.number)
-                        {
-                            if (n2.stepc > n.stepc)
-                            {
-                                //Console.WriteLine(i);
+                    foreach (num n2 in list){
+                        if (n2.number == n.number){
+                            if (n2.stepc > n.stepc){
                                 list[i] = n;
                             }
                             b = false; break;
@@ -143,12 +183,40 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     }
                     if (b) { list.Add(n); }
                 }
-                }
+                Console.WriteLine();
+                if (get_to * max_mult <= list.Count()+10) { Console.WriteLine("### | FINISHED | ###"); }
                 Console.WriteLine(list.Count());
+                Console.WriteLine($"dict size:{made.Count()}");
                 Console.WriteLine("dd end");
                 return list;
             }
+            //
 
+
+            //a smallwer version of the dedup for the sol list 
+            List<num> dedupsol(List<num> l)
+            {
+                List<num> list = new List<num>();
+                bool b = true;
+                foreach (num n in l)
+                {
+                    b = true;
+                    foreach (num n2 in list)
+                    {
+                        //Console.WriteLine($"n{n.number}|{n.stepc}|n2:{n2.number}|{n2.stepc}");
+                        if (n2.makeorder == n.makeorder)
+                        {
+                            b = false; break;
+                        }
+                    }
+                    if (b) { list.Add(n); }
+                }
+                return list;
+            }
+            //
+
+
+             //prints all elements that are of the lowest step count
             void prnt(List<num> l,int tn) {
                 Dictionary<int, List<num>> s = new Dictionary<int, List<num>>();
                 List<int> keys = new List<int>();
@@ -161,12 +229,14 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 keys.Sort();
                 foreach (int i in keys) {
                     foreach (num n in s[i]) {
-                        Console.WriteLine($"n:{n.number}|step:{n.stepc - 1}|{n.makeorder}");
+                        Console.WriteLine($"n:{n.number}|step:{n.stepc - 1}|{n.intz()}|{n.makeorder}|");
                     }
                     break;
                 }
 
             }
+            //
+
         }
     }
 }
