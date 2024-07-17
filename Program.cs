@@ -26,6 +26,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 //e  exp
                 //d  div
                 //r  div remainder
+                //c  conjgate
                 if (opcode == 'a') { number = n1.number + n2.number; makeorder = $"({n1.makeorder}+{n2.makeorder})"; }
                 else if (opcode == 'm') { number = n1.number * n2.number; makeorder = $"({n1.makeorder}*{n2.makeorder})"; }
                 else if (opcode == 's') { number = n1.number - n2.number; makeorder = $"({n1.makeorder}-{n2.makeorder})"; }
@@ -56,47 +57,61 @@ namespace number_factory // Note: actual namespace depends on the project name.
             List<num> sol = new List<num>();
             Dictionary<int,int> made = new Dictionary<int,int>();//number | step count
 
-            int get_to = 69420;
+            int get_to = 10;
 
             int serchmax = (int)(get_to * 1.1);
 
-            serchmax = Math.Max(serchmax,2000);
+            serchmax = Math.Max(serchmax,10000);
 
-            List<int> numss = new List<int>();
-            
-            numss.Add(1);
-            numss.Add(2);
-            numss.Add(3);
-            numss.Add(4);
-            numss.Add(5);
-            numss.Add(6);
-            numss.Add(7);
-            numss.Add(8);
-            numss.Add(9);
-            numss.Add(11);
-            numss.Add(12);
-            numss.Add(13);
-            numss.Add(14);
-            numss.Add(15);
-            numss.Add(16);
-            numss.Add(17);
-            numss.Add(20);
-            
+            List<int> extractable = new List<int>();
 
-            foreach (int i in numss){
-                q.Add(new num(i));
-                made.Add(i,1);
-            }
+            extractable.Add(1);
+            extractable.Add(2);
+            extractable.Add(3);
+            extractable.Add(4);
+            extractable.Add(5);
+            extractable.Add(6);
+            extractable.Add(7);
+            extractable.Add(8);
+            extractable.Add(9);
+            /*
+            extractable.Add(11);
+            extractable.Add(12);
+            extractable.Add(13);
+            extractable.Add(14);
+            extractable.Add(15);
+            extractable.Add(16);
+            extractable.Add(17);*/
+
+            foreach (int i in extractable) { q.Add(new num(i));made.Add(i, 1); }
+
+            //q.Add(new num(1)); made.Add(q[0].number,1);
+            //q[0].stepc = made[q[0].number];
+
 
             int count = 0;
             int c = 0;
             int l = 0;
-            while (true) {
+            string strin = "";
+            Console.WriteLine("enter to run");
+            while (true)
+            {
+                strin = Console.ReadLine();
+                if (strin == "") { calc_loop(); }
+                else{ Console.WriteLine($"change target number max:{serchmax}"); get_to = int.Parse(strin); sol = new List<num>();
+                    foreach (num n in q) { if (n.number == get_to) { Console.WriteLine($"n:{n.number}|step:{n.stepc - 1}|{n.intz()}|{n.makeorder}|"); } }
+                }
+            }
+
+
+            void calc_loop() {
                 count = 0;
-                l = Math.Max(q.Count() / 10, 1);
+                l = Math.Max(q.Count() / 20, 1);
                 c = 0;
+                Console.WriteLine("-----------------------------------------------------------------------------------------");
                 Console.Write("number maker:");
-                foreach (num n1 in q) {
+                foreach (num n1 in q)
+                {
 
                     foreach (num n2 in q)
                     {
@@ -105,13 +120,13 @@ namespace number_factory // Note: actual namespace depends on the project name.
                         //m  mult
                         adder(n1, n2, 'm');
                         //s  subt
-                        adder(n1, n2, 's');
+                        //adder(n1, n2, 's');
                         //e  exp
-                        adder(n1, n2, 'e');
+                        //adder(n1, n2, 'e');
                         //d  div
-                        adder(n1, n2, 'd');
+                        //adder(n1, n2, 'd');
                         //r  div remainder
-                        adder(n1, n2, 'r');
+                        //adder(n1, n2, 'r');
 
                     }
                     count++;
@@ -126,20 +141,14 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 //foreach (var i in made) {Console.WriteLine($"{i.Key}|{i.Value}");}
 
                 //compile to q
-                foreach(num n in qt){q.Add(n);}
-                
-                
-
+                foreach (num n in qt) { q.Add(n); }
                 //removes duplicates
                 sol = dedupsol(sol);
+                //print the solutions
                 prnt(sol, get_to);
                 q = dedup(q);
-
-                //print the solutions
-                
                 //tell when finished scycle and wait for me to tell to run agian
                 Console.WriteLine("ran:");
-                Console.ReadLine();
             }
 
             //the function that addes new numbers
@@ -150,16 +159,16 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 else if (opc == 's') {a = n1.number - n2.number; }
                 else if (opc == 'e') {a = (int)Math.Pow(n1.number, n2.number); }
                 else if (opc == 'd') { a = n1.number / n2.number; }
-                else if (opc == 'r') { a = n1.number % n2.number; }
-
+                else if (opc == 'r') { a = n1.number % n2.number; }                
                 if (a > 0 && a < serchmax)
                 {
-                    num n = new num(n1, n2, opc);
-                    int st = n1.stepc + n2.stepc;
-                    if (a == get_to) {sol.Add(n);}
-
-                    if (!made.ContainsKey(a)) { qt.Add(n); made.Add(a, st); }
-                    else if (made[a] > st) { qt.Add(n); made[a] = st; }
+                    if (made.ContainsKey(get_to)) { if (a == get_to && (made[get_to] >= n1.stepc + n2.stepc)) { sol.Add(new num(n1, n2, opc)); } }
+                    if (!made.ContainsKey(a)) {
+                        qt.Add(new num(n1, n2, opc)); made.Add(a, n1.stepc + n2.stepc);
+                    }
+                    else if (made[a] > n1.stepc + n2.stepc) {
+                        qt.Add(new num(n1, n2, opc)); made[a] = n1.stepc + n2.stepc;
+                    }
                 }
             }
             //
@@ -172,14 +181,16 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 int i = 0;
                 int c = 0;
                 Console.WriteLine(l.Count());
-                int d = Math.Max(l.Count()/25,1);
+                int d = Math.Max(l.Count()/20,1);
+                int co = 0;
                 foreach (num n in l)
                 {
                     b = true;
                     i = 0;
                     c++;
                     if (c % d == 0) {
-                        Console.Write("[]");
+                        co++;
+                        Console.Write($"[{co}]");
                     }
                     foreach (num n2 in list){
                         if (n2.number == n.number){
@@ -193,8 +204,8 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     if (b) { list.Add(n); }
                 }
                 Console.WriteLine();
-                if (Math.Abs(list.Count() - serchmax) <= 1) { Console.WriteLine("### | all of serch space | ###"); }
-                Console.WriteLine($"after reduction:{list.Count()} ot off:{serchmax}");
+                if (list.Count() == serchmax-1) { Console.WriteLine("### | all of serch space | ###"); }
+                Console.WriteLine($"after reduction:{list.Count()+1} ot off:{serchmax}");
                 //Console.WriteLine($"dict size:{made.Count()}");
                 return list;
             }
