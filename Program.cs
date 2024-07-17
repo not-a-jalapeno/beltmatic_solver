@@ -54,13 +54,16 @@ namespace number_factory // Note: actual namespace depends on the project name.
             List<num> q = new List<num>();
             List<num> qt = new List<num>();
             List<num> sol = new List<num>();
-            Dictionary<int,int> made = new Dictionary<int,int>();
+            Dictionary<int,int> made = new Dictionary<int,int>();//number | step count
 
-            double max_mult = 10;
+            int get_to = 69420;
 
-            int get_to = 609;
+            int serchmax = (int)(get_to * 1.1);
+
+            serchmax = Math.Max(serchmax,2000);
 
             List<int> numss = new List<int>();
+            
             numss.Add(1);
             numss.Add(2);
             numss.Add(3);
@@ -75,7 +78,10 @@ namespace number_factory // Note: actual namespace depends on the project name.
             numss.Add(13);
             numss.Add(14);
             numss.Add(15);
-
+            numss.Add(16);
+            numss.Add(17);
+            numss.Add(20);
+            
 
             foreach (int i in numss){
                 q.Add(new num(i));
@@ -87,7 +93,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
             int l = 0;
             while (true) {
                 count = 0;
-                l = q.Count()/10;
+                l = Math.Max(q.Count() / 10, 1);
                 c = 0;
                 Console.Write("number maker:");
                 foreach (num n1 in q) {
@@ -112,7 +118,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     if (count % l == 0)
                     {
                         c++;
-                        Console.Write($"[{c-1}]");
+                        Console.Write($"[{c}]");
                     }
                 }
                 Console.WriteLine();
@@ -121,13 +127,16 @@ namespace number_factory // Note: actual namespace depends on the project name.
 
                 //compile to q
                 foreach(num n in qt){q.Add(n);}
-                //print the solutions
-                prnt(sol, get_to);
+                
+                
 
                 //removes duplicates
                 sol = dedupsol(sol);
+                prnt(sol, get_to);
                 q = dedup(q);
 
+                //print the solutions
+                
                 //tell when finished scycle and wait for me to tell to run agian
                 Console.WriteLine("ran:");
                 Console.ReadLine();
@@ -143,7 +152,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 else if (opc == 'd') { a = n1.number / n2.number; }
                 else if (opc == 'r') { a = n1.number % n2.number; }
 
-                if (a > 0 && a < get_to*max_mult)
+                if (a > 0 && a < serchmax)
                 {
                     num n = new num(n1, n2, opc);
                     int st = n1.stepc + n2.stepc;
@@ -157,13 +166,13 @@ namespace number_factory // Note: actual namespace depends on the project name.
 
             //removes duplicate numbers from the list of elelments replace longer step counts 
             List<num> dedup(List<num> l) {
-                Console.WriteLine("\ndeduplication:");
+                Console.Write("\ndeduplication:");
                 List<num> list = new List<num>();
                 bool b = true;
                 int i = 0;
                 int c = 0;
                 Console.WriteLine(l.Count());
-                int d = l.Count()/25;
+                int d = Math.Max(l.Count()/25,1);
                 foreach (num n in l)
                 {
                     b = true;
@@ -184,10 +193,9 @@ namespace number_factory // Note: actual namespace depends on the project name.
                     if (b) { list.Add(n); }
                 }
                 Console.WriteLine();
-                if (get_to * max_mult <= list.Count()+10) { Console.WriteLine("### | FINISHED | ###"); }
-                Console.WriteLine(list.Count());
-                Console.WriteLine($"dict size:{made.Count()}");
-                Console.WriteLine("dd end");
+                if (Math.Abs(list.Count() - serchmax) <= 1) { Console.WriteLine("### | all of serch space | ###"); }
+                Console.WriteLine($"after reduction:{list.Count()} ot off:{serchmax}");
+                //Console.WriteLine($"dict size:{made.Count()}");
                 return list;
             }
             //
@@ -214,9 +222,29 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 return list;
             }
             //
+            //sorts by the sum of the extracted numbers
+            List<num> sortsum(List<num> l)
+            {
+                Dictionary<int, List<num>> s = new Dictionary<int, List<num>>();
+                List<int> keys = new List<int>();
+                foreach (num n in l)
+                {
+                    if (!s.ContainsKey(n.ints.Sum())) { s.Add(n.ints.Sum(), new List<num> { n }); keys.Add(n.ints.Sum()); }
+                    else { s[n.ints.Sum()].Add(n); }
+                }
+                keys.Sort();
+                List<num> listout = new List<num>();
+                foreach (int i in keys)
+                {
+                    foreach (num n in s[i])
+                    {
+                        listout.Add(n);
+                    }
+                }
+                return listout;
+            }
 
-
-             //prints all elements that are of the lowest step count
+            //prints all elements that are of the lowest step count
             void prnt(List<num> l,int tn) {
                 Dictionary<int, List<num>> s = new Dictionary<int, List<num>>();
                 List<int> keys = new List<int>();
@@ -228,7 +256,7 @@ namespace number_factory // Note: actual namespace depends on the project name.
                 }
                 keys.Sort();
                 foreach (int i in keys) {
-                    foreach (num n in s[i]) {
+                    foreach (num n in sortsum(s[i])) {
                         Console.WriteLine($"n:{n.number}|step:{n.stepc - 1}|{n.intz()}|{n.makeorder}|");
                     }
                     break;
